@@ -20,12 +20,12 @@ def _img_filename_prefix(chessboard_img_path):
     """ part of the image filename that shows which piece is on which square:
         RRqpBnNr-QKPkrQPK-PpbQnNB1-nRRBpNpk-Nqprrpqp-kKKbNBPP-kQnrpkrn-BKRqbbBp
     """
-    return chessboard_img_path.split("/")[4][:-4]
+    return os.path.split(chessboard_img_path)[1][:-4]
 
 def _img_sub_dir(chessboard_img_path):
     """ The sub-directory where the chessboard tile images will be saved
     """
-    sub_dir = chessboard_img_path.split("/")[3]
+    sub_dir = os.path.split(os.path.split(chessboard_img_path)[0])[1]
     return os.path.join(TILES_DIR, sub_dir)
 
 def _img_save_dir(chessboard_img_path):
@@ -65,7 +65,7 @@ def generate_tiles_from_all_chessboards():
     """
     if not os.path.exists(TILES_DIR):
         os.makedirs(TILES_DIR)
-    chessboard_img_filenames = glob("{}/*/*.png".format(CHESSBOARDS_DIR))
+    chessboard_img_filenames = glob(os.path.join(CHESSBOARDS_DIR, "*", "*.png"))
     num_chessboards = len(chessboard_img_filenames)
     num_success = 0
     num_skipped = 0

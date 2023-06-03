@@ -7,11 +7,13 @@ from pathlib import Path
 import tensorflow as tf
 from tensorflow.keras import layers, models
 import numpy as np
+import matplotlib.pyplot as plt
 
 from constants import TILES_DIR, NN_MODEL_PATH, FEN_CHARS, USE_GRAYSCALE
 
 RATIO = 0.82    # ratio of training vs. test data
 N_EPOCHS = 20
+
 
 def image_data(image_path) -> tf.image:
     n_channels = 1 if USE_GRAYSCALE else 3
@@ -19,6 +21,7 @@ def image_data(image_path) -> tf.image:
     img = tf.image.decode_image(img, channels=n_channels)
     img = tf.image.convert_image_dtype(img, tf.float32)
     return tf.image.resize(img, [32, 32])
+
 
 def create_model() -> models.Sequential:
     """ Convolutional neural network for image classification.
@@ -40,6 +43,7 @@ def create_model() -> models.Sequential:
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
     return model
+
 
 def get_dataset():
     """ Prepares training and test datasets from all PNG tiles
@@ -86,11 +90,29 @@ if __name__ == '__main__':
         print("No training images found!")
         exit(1)
     model = create_model()
-    model.fit(train_images, train_labels, epochs=N_EPOCHS,
-              validation_data=(test_images, test_labels))
+    history = model.fit(train_images, train_labels, epochs=N_EPOCHS,
+                        validation_data=(test_images, test_labels))
+
+    # Plot the training accuracy
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('Model Accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend(['Train', 'Validation'], loc='upper left')
+    plt.show()
+
+    # Plot the training loss
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('Model Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend(['Train', 'Validation'], loc='upper left')
+    plt.show()
 
     print('Saving CNN model to {}'.format(NN_MODEL_PATH))
     models.save_model(model, NN_MODEL_PATH, overwrite=True)
 
     print('Evaluating CNN model on test data:')
-    test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=1)
+    test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=1)
